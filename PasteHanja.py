@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import \
-QApplication, QWidget, QVBoxLayout, QPushButton, QMainWindow, QDialog
+QApplication, QWidget, QVBoxLayout, QPushButton, QMainWindow, QDialog, QLabel
 from PyQt5.QtGui import QPixmap, QCloseEvent, QIcon
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -20,6 +21,7 @@ options.add_experimental_option("detach", True)
 #options.add_argument("--headless")
 driver_service = Service(executable_path="chromedriver_win32/chromdriver.exe")
 driver = webdriver.Chrome(service=driver_service, options=options)
+
 
 class MyApp(QMainWindow):
     url = ""
@@ -85,38 +87,47 @@ class MyDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.totalpages = 0
-        self.currentPage = 0
-        uic.loadUi('untitled2.ui', self) 
+        self.totalPages = 0
+        
+        self.window = uic.loadUi("untitled2.ui")
     def initUI(self):
         
         pixmap = QPixmap('element_screenshot.png')
-        self.label.setPixmap(pixmap)
-        self.label.adjustSize()
-        self.label.show()
+        self.window.label.setPixmap(pixmap)
+        self.window.label.adjustSize()
+        self.window.label.show()
 
         pixmap = QPixmap('element_screenshot2.png')
-        self.label_2.setPixmap(pixmap)
-        self.label_2.adjustSize() 
-        self.label_2.show()
-
-        pixmap = QPixmap(f'strokes//stroke1')
-        self.label_3.setPixmap(pixmap)
-        self.label_3.adjustSize() 
-        self.label_3.clicked.connect(self.strokeTurner)
-        self.label_3.show()
-
-        self.show()
-    
-    def setStrokeTurner(self, num_pages):
-        self.totalPages = num_pages
-
-    def strokeTurner(self):
-        self.currentPage += 1
-        pixmap = QPixmap(f'strokes//stroke{self.currentPage}')
-        self.label_3.setPixmap(pixmap)
-        self.label_3.show()
+        self.window.label_2.setPixmap(pixmap)
+        self.window.label_2.adjustSize() 
+        self.window.label_2.show()
         
+        self.label_3 = StrokeLabel(self.totalPages)
+        self.window.verticalLayout.addWidget(self.label_3)
+        pixmap = QPixmap(f'strokes//storke1')
+        self.label_3.setPixmap(pixmap)
+        self.label_3.move(40, 100)
+        self.label_3.adjustSize() 
+        self.label_3.show()
+
+        self.window.show()
+    
+    def setStrokeTurner(self, totalPages):
+        self.totalPages = totalPages
+
+        
+class StrokeLabel(QLabel):
+    def __init__(self, totalPages):
+        super().__init__()
+        self.currentPages = 1
+        self.totalPages = totalPages
+        
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            print("clicked!")
+            self.currentPages += 1
+            self.setPixmap(QPixmap(f"strokes//stroke{self.currentPages}"))
+            self.currentPages = self.currentPages % self.totalPages
 
 
 
