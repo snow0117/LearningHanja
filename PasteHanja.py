@@ -61,17 +61,14 @@ class MyApp(QMainWindow):
 
         elements = driver.find_elements(By.CSS_SELECTOR, 'div.img_area >  img[width="60"][height="60"]')
 
-        self.page = 0
+        self.page = 1
         for self.page, element in enumerate(elements, start=1):
             element.screenshot(f"strokes//stroke{self.page}.png")
 
         self.dialog.setStrokeTurner(self.page)
 
 
-                                     
-
-        
-
+                                
     def mini(self):
         driver.minimize_window()
 
@@ -92,26 +89,22 @@ class MyDialog(QDialog):
         self.window = uic.loadUi("untitled2.ui")
     def initUI(self):
         
-        pixmap = QPixmap('element_screenshot.png')
-        self.window.label.setPixmap(pixmap)
+        self.window.label.setPixmap(QPixmap('element_screenshot.png'))
         self.window.label.adjustSize()
-        self.window.label.show()
-
-        pixmap = QPixmap('element_screenshot2.png')
-        self.window.label_2.setPixmap(pixmap)
-        self.window.label_2.adjustSize() 
-        self.window.label_2.show()
         
-        self.label_3 = StrokeLabel(self.totalPages)
-        self.window.verticalLayout.addWidget(self.label_3)
-        pixmap = QPixmap(f'strokes//storke1')
-        self.label_3.setPixmap(pixmap)
-        self.label_3.move(40, 100)
-        self.label_3.adjustSize() 
-        self.label_3.show()
 
+        self.window.label_2.setPixmap(QPixmap('element_screenshot2.png'))
+        self.window.label_2.adjustSize() 
+        
+        
+
+        self.label_3 = StrokeLabel(self.totalPages)
+        
+        self.label_3.setPixmap(QPixmap(f'strokes//stroke1'))
+        self.label_3.adjustSize() 
+        self.window.horizontalLayout.addWidget(self.label_3)
         self.window.show()
-    
+
     def setStrokeTurner(self, totalPages):
         self.totalPages = totalPages
 
