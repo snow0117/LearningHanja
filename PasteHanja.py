@@ -16,12 +16,22 @@ import sys
 import time
 import pyperclip
 
+import glob
+import os
+
 options = Options()
 options.add_experimental_option("detach", True)
-#options.add_argument("--headless")
+options.add_argument("--headless")
 driver_service = Service(executable_path="chromedriver_win32/chromdriver.exe")
 driver = webdriver.Chrome(service=driver_service, options=options)
 
+
+def strokeReader():
+    elements = driver.find_elements(By.CSS_SELECTOR, 'div.img_area > img[width="60"][height="60"]')
+    page = 1
+    for page, element in enumerate(elements, start=1):
+        element.screenshot(f"strokes//stroke{page}.png")
+    return page
 
 class MyApp(QMainWindow):
     url = ""
@@ -42,7 +52,10 @@ class MyApp(QMainWindow):
         self.show()
     
     def start_crawling(self):
-        
+        # files = glob.glob('strokes/*')
+        # for f in files:
+        #     os.remove(f)
+
         driver.get('https://hanja.dict.naver.com/#/search?query=' + self.lineEdit.text())
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'strong[class="highlight"]'))).click()
@@ -58,21 +71,13 @@ class MyApp(QMainWindow):
 
         element = driver.find_element(By.CSS_SELECTOR, "ul.stroke_list")
         element.screenshot('element_screenshot3.png')
-
-        elements = driver.find_elements(By.CSS_SELECTOR, 'div.img_area >  img[width="60"][height="60"]')
-
-        self.page = 1
-        for self.page, element in enumerate(elements, start=1):
-            element.screenshot(f"strokes//stroke{self.page}.png")
-
-        self.dialog.setStrokeTurner(self.page)
-
-
-                                
-    def mini(self):
-        driver.minimize_window()
+        num_page = strokeReader()
+        self.dialog.setStrokeTurner(num_page)
+    
 
         
+
+      
     def closeEvent(self, event: QCloseEvent):
         driver.quit()
         if self.dialog is not None:
@@ -88,7 +93,8 @@ class MyDialog(QDialog):
         
         self.window = uic.loadUi("untitled2.ui")
     def initUI(self):
-        
+        #self.window.pushButton.clicked.connect(strokeReader)
+
         self.window.label.setPixmap(QPixmap('element_screenshot.png'))
         self.window.label.adjustSize()
         
@@ -96,13 +102,13 @@ class MyDialog(QDialog):
         self.window.label_2.setPixmap(QPixmap('element_screenshot2.png'))
         self.window.label_2.adjustSize() 
         
-        
 
         self.label_3 = StrokeLabel(self.totalPages)
         
-        self.label_3.setPixmap(QPixmap(f'strokes//stroke1'))
+        self.window.verticalLayout.addWidget(self.label_3)
+        self.label_3.setPixmap(QPixmap(f'strokes//stroke1.png'))
         self.label_3.adjustSize() 
-        self.window.horizontalLayout.addWidget(self.label_3)
+        
         self.window.show()
 
     def setStrokeTurner(self, totalPages):
@@ -119,9 +125,9 @@ class StrokeLabel(QLabel):
         if event.button() == Qt.LeftButton:
             print("clicked!")
             self.currentPages += 1
-            self.setPixmap(QPixmap(f"strokes//stroke{self.currentPages}"))
+            print(self.currentPages)
+            self.setPixmap(QPixmap(f"strokes//stroke{self.currentPages}.png"))
             self.currentPages = self.currentPages % self.totalPages
-
 
 
 if __name__ == '__main__':

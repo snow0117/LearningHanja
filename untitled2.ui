@@ -39,21 +39,20 @@
     <string>TextLabel</string>
    </property>
   </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
+  <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
      <x>40</x>
      <y>90</y>
      <width>81</width>
-     <height>80</height>
+     <height>81</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout"/>
+   <layout class="QVBoxLayout" name="verticalLayout"/>
   </widget>
   <zorder>label_2</zorder>
   <zorder>label</zorder>
   <zorder>verticalLayoutWidget</zorder>
-  <zorder>horizontalLayoutWidget</zorder>
  </widget>
  <resources/>
  <connections/>
