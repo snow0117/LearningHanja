@@ -1,0 +1,25 @@
+from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication, QLabel
+from PyQt5.QtCore import Qt
+import sys
+
+class ClickableLabel(QLabel):
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            print('You clicked the label!')
+
+class MyWindow:
+    def __init__(self):
+        self.window = uic.loadUi("yourfile.ui")
+        self.clickable_label = ClickableLabel("Click me", self.window)
+
+        # replace the existing label in your window layout:
+        self.window.layout().replaceWidget(self.window.label, self.clickable_label)
+        # Here, self.window.label is the QLabel that you added in the Designer.
+        # you should replace 'label' with your label's objectName
+
+        self.window.show()
+
+app = QApplication(sys.argv)
+win = MyWindow()
+sys.exit(app.exec_())

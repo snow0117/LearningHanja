@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import \
-QApplication, QWidget, QVBoxLayout, QPushButton, QMainWindow, QDialog, QLabel
+QApplication, QWidget, QVBoxLayout, QPushButton, QMainWindow, QDialog, QLabel, QLineEdit
 from PyQt5.QtGui import QPixmap, QCloseEvent, QIcon
-from PyQt5 import uic
+from PyQt5 import QtGui, uic
 from PyQt5.QtCore import Qt
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -30,8 +30,16 @@ def strokeReader():
     elements = driver.find_elements(By.CSS_SELECTOR, 'div.img_area > img[width="60"][height="60"]')
     page = 1
     for page, element in enumerate(elements, start=1):
+        time.sleep(0.1)
         element.screenshot(f"strokes//stroke{page}.png")
     return page
+
+class ClickableLineEdit(QLineEdit):
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            print('you clicked the line edit!')
+        super().mousePressEvent(event)
+
 
 class MyApp(QMainWindow):
     url = ""
@@ -44,13 +52,22 @@ class MyApp(QMainWindow):
 
     def initUI(self):
         
+        
+        new_line_edit = ClickableLineEdit(self)
+        self.horizontalLayout.replaceWidget(self.lineEdit, new_line_edit)
+        self.lineEdit.deleteLater()
+        self.lineEdit = new_line_edit
+
+
         self.setWindowTitle('Web Crawler')
-        self.dialog = MyDialog()
         self.btn.clicked.connect(self.start_crawling)
-        self.btn.clicked.connect(self.dialog.initUI)
+        self.btn.clicked.connect(MyDialog().initUI)
+        
         
         self.show()
     
+        
+
     def start_crawling(self):
         # files = glob.glob('strokes/*')
         # for f in files:
@@ -73,11 +90,7 @@ class MyApp(QMainWindow):
         element.screenshot('element_screenshot3.png')
         num_page = strokeReader()
         self.dialog.setStrokeTurner(num_page)
-    
-
-        
-
-      
+          
     def closeEvent(self, event: QCloseEvent):
         driver.quit()
         if self.dialog is not None:
@@ -102,6 +115,8 @@ class MyDialog(QDialog):
         self.window.label_2.setPixmap(QPixmap('element_screenshot2.png'))
         self.window.label_2.adjustSize() 
         
+
+      
 
         self.label_3 = StrokeLabel(self.totalPages)
         
