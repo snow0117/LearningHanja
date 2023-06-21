@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import \
-QApplication, QWidget, QVBoxLayout, QPushButton, QMainWindow, QDialog, QLabel, QLineEdit
-from PyQt5.QtGui import QPixmap, QCloseEvent, QIcon
+QApplication, QListWidget, QMainWindow, QDialog, QLabel, QLineEdit
+from PyQt5.QtGui import QPixmap, QCloseEvent
 from PyQt5 import QtGui, uic
 from PyQt5.QtCore import Qt
 from selenium import webdriver
@@ -34,16 +34,51 @@ def strokeReader():
         element.screenshot(f"strokes//stroke{page}.png")
     return page
 
+class MyListWidget(QListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.text_edit = None
+    
+    def set_text_edit(self, text_edit):
+        self.text_edit = text_edit
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return:
+            current_item = self.currentItem()
+            if current_item:
+                first_letter = current_item.text()[0]
+                if self.text_edit:
+                    self.text_edit.setText(self.text_edit.toPlainText() +  first_letter + ' ')
+        elif event.key() == Qt.Key_Up:
+            if self.currentRow() == 0:
+                lineEdit = self.window().findChild(ClickableLineEdit, "lineEdit")
+                if lineEdit:
+                    lineEdit.setFocus()
+            
+        super().keyPressEvent(event)
+
+
 class ClickableLineEdit(QLineEdit):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            print('you clicked the line edit!')
+            pass
         super().mousePressEvent(event)
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Down:
+            listWidget = self.window().findChild(MyListWidget, "listWidget")
+            if listWidget:
+                print("동작!")
+                listWidget.setFocus()
+                listWidget.setCurrentRow(0)
+        else:
+            super().keyPressEvent(event)
+
 
 
 class MyApp(QMainWindow):
     url = ""
     
+
     def __init__(self):
         super().__init__()
     
@@ -52,21 +87,43 @@ class MyApp(QMainWindow):
 
     def initUI(self):
         
-        
         new_line_edit = ClickableLineEdit(self)
+        new_line_edit.setObjectName("lineEdit")
+        my_list_widget = MyListWidget(self)
+        my_list_widget.setObjectName("listWidget")
+        my_list_widget.set_text_edit(self.textEdit)
         self.horizontalLayout.replaceWidget(self.lineEdit, new_line_edit)
+        self.verticalLayout.replaceWidget(self.listWidget, my_list_widget)
         self.lineEdit.deleteLater()
+        self.listWidget.deleteLater()
         self.lineEdit = new_line_edit
-
+        self.listWidget = my_list_widget
 
         self.setWindowTitle('Web Crawler')
+        self.dialog = MyDialog()
         self.btn.clicked.connect(self.start_crawling)
-        self.btn.clicked.connect(MyDialog().initUI)
-        
+        self.btn.clicked.connect(self.dialog.initUI)
+        self.lineEdit.returnPressed.connect(self.take_item) 
+
+        self.pushButton_2.clicked.connect(self.undo)
+
         
         self.show()
+    def undo(self):
+        self.textEdit.setText(self.textEdit.toPlainText()[:-2])
     
+    def take_item(self):
+        self.listWidget.clear()
+        driver.get('https://hanja.dict.naver.com/#/search?query=' + self.lineEdit.text())
+        wait = WebDriverWait(driver, 20)
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.component_keyword.has-saving-function')))
+        elements = driver.find_elements(By.CSS_SELECTOR, 'div[class="hanja_word"]')
+
+        for element in elements:
+            self.listWidget.addItem(element.text)
         
+        
+
 
     def start_crawling(self):
         # files = glob.glob('strokes/*')
@@ -105,6 +162,7 @@ class MyDialog(QDialog):
         self.totalPages = 0
         
         self.window = uic.loadUi("untitled2.ui")
+        self.label_3 = None
     def initUI(self):
         #self.window.pushButton.clicked.connect(strokeReader)
 
@@ -116,18 +174,23 @@ class MyDialog(QDialog):
         self.window.label_2.adjustSize() 
         
 
-      
+        if self.label_3 is not None:
+            self.label_3.deleteLater()
 
         self.label_3 = StrokeLabel(self.totalPages)
-        
         self.window.verticalLayout.addWidget(self.label_3)
+        
         self.label_3.setPixmap(QPixmap(f'strokes//stroke1.png'))
         self.label_3.adjustSize() 
         
-        self.window.show()
+        self.window.show()                   
 
     def setStrokeTurner(self, totalPages):
         self.totalPages = totalPages
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.label_3 = None
+        return super().closeEvent(a0)
 
         
 class StrokeLabel(QLabel):
