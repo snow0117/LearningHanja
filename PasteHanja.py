@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import \
-QApplication, QListWidget, QMainWindow, QDialog, QLabel, QLineEdit, 
+QApplication, QListWidget, QMainWindow, QDialog, QLabel, QLineEdit
 from PyQt5.QtGui import QPixmap, QCloseEvent, QTextCursor
 from PyQt5 import QtGui, uic
 from PyQt5.QtCore import Qt
