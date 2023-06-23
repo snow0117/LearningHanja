@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import \
-QApplication, QListWidget, QMainWindow, QDialog, QLabel, QLineEdit
-from PyQt5.QtGui import QPixmap, QCloseEvent
+QApplication, QListWidget, QMainWindow, QDialog, QLabel, QLineEdit, 
+from PyQt5.QtGui import QPixmap, QCloseEvent, QTextCursor
 from PyQt5 import QtGui, uic
 from PyQt5.QtCore import Qt
 from selenium import webdriver
@@ -10,7 +10,6 @@ from selenium.webdriver.common.by import By
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 
 import sys
 import time
@@ -49,6 +48,9 @@ class MyListWidget(QListWidget):
                 first_letter = current_item.text()[0]
                 if self.text_edit:
                     self.text_edit.setText(self.text_edit.toPlainText() +  first_letter + ' ')
+                    cursor = self.text_edit.textCursor()
+                    cursor.movePosition(QTextCursor.End)
+                    self.text_edit.setTextCursor(cursor)
         elif event.key() == Qt.Key_Up:
             if self.currentRow() == 0:
                 lineEdit = self.window().findChild(ClickableLineEdit, "lineEdit")
@@ -89,9 +91,12 @@ class MyApp(QMainWindow):
         
         new_line_edit = ClickableLineEdit(self)
         new_line_edit.setObjectName("lineEdit")
+
         my_list_widget = MyListWidget(self)
         my_list_widget.setObjectName("listWidget")
         my_list_widget.set_text_edit(self.textEdit)
+        my_list_widget.itemDoubleClicked.connect(self.on_item_double_clicked)
+
         self.horizontalLayout.replaceWidget(self.lineEdit, new_line_edit)
         self.verticalLayout.replaceWidget(self.listWidget, my_list_widget)
         self.lineEdit.deleteLater()
@@ -109,6 +114,9 @@ class MyApp(QMainWindow):
 
         
         self.show()
+    def on_item_double_clicked(self, item):
+        self.lineEdit.setText(item.text()[0])
+
     def undo(self):
         self.textEdit.setText(self.textEdit.toPlainText()[:-2])
     
